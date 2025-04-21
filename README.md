@@ -1,21 +1,8 @@
 #aa
 HourGroup = 
-VAR ExcludedAbsences = 
-    {
-        "SL", "CL", "OD", "PL", "RH", "TL", "TS", "CO", 
-        "RL", "EL", "JL", "LWP", "ML", "PAT"
-    }
-
-VAR IsExcludedAbsence = 
-    NOT [Absence] IN ExcludedAbsences
-
-VAR IsWO = 
-    [Assigned Shift Code] = "WO"
-
-RETURN
 IF(
-    IsWO || IsExcludedAbsence, 
-    BLANK(),
+    [Assigned Shift Code] = "WO", 
+    BLANK(),  // Exclude rows where Assigned Shift Code is "WO"
     SWITCH(TRUE(),
         'Table'[Confirmed Total Hours] <= 2, "0-2 hrs",
         'Table'[Confirmed Total Hours] <= 4, "2-4 hrs",
