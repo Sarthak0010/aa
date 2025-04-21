@@ -1,4 +1,25 @@
 #aa
+LateIn =
+VAR Schedule = [Confirmed Schedule]
+VAR StartTimeString =
+    IF(
+        CONTAINSSTRING(Schedule, "to"),
+        LEFT(Schedule, FIND("to", Schedule) - 1),
+        BLANK()
+    )
+VAR StartTime =
+    IF(
+        NOT ISBLANK(StartTimeString),
+        TIMEVALUE(TRIM(StartTimeString)),
+        BLANK()
+    )
+RETURN
+IF(
+    ISBLANK(StartTime) || ISBLANK([Confirmed In Punch]),
+    "No",
+    IF([Confirmed In Punch] > StartTime, "Yes", "No")
+)
+
 
 🎯 Dashboard 1: HR Attendance & Alerts Tracker (April 1–15)
 Purpose: Identify attendance patterns, missing punches, late ins, low working hours, and pending regularizations.
