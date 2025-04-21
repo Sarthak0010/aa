@@ -1,15 +1,25 @@
 #aa
-HourGroup = 
+MissingPunch = 
+VAR ExcludedAbsences = {
+    "SL", "CL", "OD", "PL", "RH", "TL", "TS", "CO", 
+    "RL", "EL", "JL", "LWP", "ML", "PAT"
+}
+VAR IsExcludedAbsence = 
+    NOT ([Absence] IN ExcludedAbsences)
+
+VAR IsExcluded = 
+    [Assigned Shift Code] = "WO" ||
+    [Regularization Status] = "Employee To Regularize" ||
+    IsExcludedAbsence
+
+RETURN
 IF(
-    [Assigned Shift Code] = "WO", 
-    BLANK(),  // Exclude rows where Assigned Shift Code is "WO"
-    SWITCH(TRUE(),
-        'Table'[Confirmed Total Hours] <= 2, "0-2 hrs",
-        'Table'[Confirmed Total Hours] <= 4, "2-4 hrs",
-        'Table'[Confirmed Total Hours] <= 6, "4-6 hrs",
-        'Table'[Confirmed Total Hours] <= 8, "6-8 hrs",
-        'Table'[Confirmed Total Hours] <= 10, "8-10 hrs",
-        "10+ hrs"
+    IsExcluded,
+    "No",
+    IF(
+        ISBLANK([Confirmed In Punch]) || ISBLANK([Confirmed Out Punch]),
+        "Yes",
+        "No"
     )
 )
 
