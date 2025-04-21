@@ -1,13 +1,31 @@
 #aa
 HourGroup = 
-SWITCH(TRUE(),
-    'Table'[Confirmed Total Hours] <= 2, "0-2 hrs",
-    'Table'[Confirmed Total Hours] <= 4, "2-4 hrs",
-    'Table'[Confirmed Total Hours] <= 6, "4-6 hrs",
-    'Table'[Confirmed Total Hours] <= 8, "6-8 hrs",
-    'Table'[Confirmed Total Hours] <= 10, "8-10 hrs",
-    "10+ hrs"
+VAR ExcludedAbsences = 
+    {
+        "SL", "CL", "OD", "PL", "RH", "TL", "TS", "CO", 
+        "RL", "EL", "JL", "LWP", "ML", "PAT"
+    }
+
+VAR IsExcludedAbsence = 
+    NOT [Absence] IN ExcludedAbsences
+
+VAR IsWO = 
+    [Assigned Shift Code] = "WO"
+
+RETURN
+IF(
+    IsWO || IsExcludedAbsence, 
+    BLANK(),
+    SWITCH(TRUE(),
+        'Table'[Confirmed Total Hours] <= 2, "0-2 hrs",
+        'Table'[Confirmed Total Hours] <= 4, "2-4 hrs",
+        'Table'[Confirmed Total Hours] <= 6, "4-6 hrs",
+        'Table'[Confirmed Total Hours] <= 8, "6-8 hrs",
+        'Table'[Confirmed Total Hours] <= 10, "8-10 hrs",
+        "10+ hrs"
+    )
 )
+
 
 
 🎯 Dashboard 1: HR Attendance & Alerts Tracker (April 1–15)
