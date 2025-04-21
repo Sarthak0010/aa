@@ -1,45 +1,10 @@
 #aa
-LateIn =
-VAR Schedule = [Confirmed Schedule]
-VAR ExcludedSchedules = 
-    {
-        "WO", 
-        "Normal Working Hours", 
-        "Half Day 9:30 AM to 2:00 PM"
-    }
-VAR ExcludedAbsences = 
-    {
-        "SL", "CL", "OD", "PL", "RH", "TL", "TS", "CO", 
-        "RL", "EL", "JL", "LWP", "ML", "PAT"
-    }
-
-VAR IsExcludedSchedule = Schedule IN ExcludedSchedules
-VAR IsRegularizationPending = [Regularization Status] = "Employee To Regularize"
-VAR IsValidAbsence = [Absence] IN ExcludedAbsences
-
-VAR ShouldExclude = IsExcludedSchedule || IsRegularizationPending || IsValidAbsence
-
-VAR StartTimeString =
-    IF(
-        NOT ShouldExclude && CONTAINSSTRING(Schedule, "to"),
-        LEFT(Schedule, FIND("to", Schedule) - 1),
-        BLANK()
-    )
-
-VAR StartTime =
-    IF(
-        NOT ISBLANK(StartTimeString),
-        TIMEVALUE(TRIM(StartTimeString)),
-        BLANK()
-    )
-
-RETURN
-IF(
-    ShouldExclude || ISBLANK(StartTime) || ISBLANK([Confirmed In Punch]),
-    "No",
-    IF([Confirmed In Punch] > StartTime, "Yes", "No")
-)
-
+KPI Card Title	DAX Expression (create as Measures)
+Total Employees	TotalEmp = DISTINCTCOUNT('Table'[Employee Number])
+Average Working Hours	AvgHours = AVERAGE('Table'[Confirmed Total Hours])
+Total Late In Entries	LateInCount = CALCULATE(COUNTROWS('Table'), 'Table'[LateIn] = "Yes")
+Missing Punch Records	MissingPunchCount = CALCULATE(COUNTROWS('Table'), 'Table'[MissingPunch] = "Yes")
+Regularization Required	RegNeeded = CALCULATE(COUNTROWS('Table'), 'Table'[NeedsRegularization] = "Yes")
 
 
 🎯 Dashboard 1: HR Attendance & Alerts Tracker (April 1–15)
