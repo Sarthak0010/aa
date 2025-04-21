@@ -1,9 +1,16 @@
 #aa
 LateIn =
 VAR Schedule = [Confirmed Schedule]
+VAR ExcludedSchedules = 
+    {
+        "WO", 
+        "Normal Working Hours", 
+        "Half Day 9:30 AM to 2:00 PM"
+    }
+VAR IsExcluded = Schedule IN ExcludedSchedules
 VAR StartTimeString =
     IF(
-        CONTAINSSTRING(Schedule, "to"),
+        NOT IsExcluded && CONTAINSSTRING(Schedule, "to"),
         LEFT(Schedule, FIND("to", Schedule) - 1),
         BLANK()
     )
@@ -15,7 +22,7 @@ VAR StartTime =
     )
 RETURN
 IF(
-    ISBLANK(StartTime) || ISBLANK([Confirmed In Punch]),
+    IsExcluded || ISBLANK(StartTime) || ISBLANK([Confirmed In Punch]),
     "No",
     IF([Confirmed In Punch] > StartTime, "Yes", "No")
 )
