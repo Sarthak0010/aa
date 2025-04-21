@@ -1,41 +1,43 @@
 #aa
-UnderWorked = 
+LateIn =
+VAR Schedule = [Confirmed Schedule]
 VAR ExcludedSchedules = 
     {
-        "9:00 AM to 1:00 PM",
-        "9:30 AM to 2:00PM",
-        "9:30 AM to 2:00 PM New",
-        "Half Day 9:30 AM to 2:00 PM",
-        "WO"
+        "WO", 
+        "Normal Working Hours", 
+        "Half Day 9:30 AM to 2:00 PM"
     }
-
 VAR ExcludedAbsences = 
     {
         "SL", "CL", "OD", "PL", "RH", "TL", "TS", "CO", 
         "RL", "EL", "JL", "LWP", "ML", "PAT"
     }
 
-VAR IsScheduleExcluded = 
-    [Assigned Shift Code] = "WO" || [Confirmed Schedule] IN ExcludedSchedules
+VAR IsExcludedSchedule = Schedule IN ExcludedSchedules
+VAR IsRegularizationPending = [Regularization Status] = "Employee To Regularize"
+VAR IsValidAbsence = [Absence] IN ExcludedAbsences
 
-VAR IsRegularizationPending =
-    [Regularization Status] = "Employee To Regularize"
+VAR ShouldExclude = IsExcludedSchedule || IsRegularizationPending || IsValidAbsence
 
-VAR IsAllowedAbsence = 
-    [Absence] IN ExcludedAbsences
+VAR StartTimeString =
+    IF(
+        NOT ShouldExclude && CONTAINSSTRING(Schedule, "to"),
+        LEFT(Schedule, FIND("to", Schedule) - 1),
+        BLANK()
+    )
 
-VAR ShouldExclude =
-    IsScheduleExcluded || IsRegularizationPending || IsAllowedAbsence
+VAR StartTime =
+    IF(
+        NOT ISBLANK(StartTimeString),
+        TIMEVALUE(TRIM(StartTimeString)),
+        BLANK()
+    )
 
 RETURN
 IF(
-    ShouldExclude,
+    ShouldExclude || ISBLANK(StartTime) || ISBLANK([Confirmed In Punch]),
     "No",
-    IF(
-        [Confirmed Total Hours] < 8,
-        "Yes",
-        "No"
-    )
+    IF([Confirmed In Punch] > StartTime, "Yes", "No")
 )
 
 
