@@ -1,10 +1,13 @@
 #aa
-KPI Card Title	DAX Expression (create as Measures)
-Total Employees	TotalEmp = DISTINCTCOUNT('Table'[Employee Number])
-Average Working Hours	AvgHours = AVERAGE('Table'[Confirmed Total Hours])
-Total Late In Entries	LateInCount = CALCULATE(COUNTROWS('Table'), 'Table'[LateIn] = "Yes")
-Missing Punch Records	MissingPunchCount = CALCULATE(COUNTROWS('Table'), 'Table'[MissingPunch] = "Yes")
-Regularization Required	RegNeeded = CALCULATE(COUNTROWS('Table'), 'Table'[NeedsRegularization] = "Yes")
+HourGroup = 
+SWITCH(TRUE(),
+    'Table'[Confirmed Total Hours] <= 2, "0-2 hrs",
+    'Table'[Confirmed Total Hours] <= 4, "2-4 hrs",
+    'Table'[Confirmed Total Hours] <= 6, "4-6 hrs",
+    'Table'[Confirmed Total Hours] <= 8, "6-8 hrs",
+    'Table'[Confirmed Total Hours] <= 10, "8-10 hrs",
+    "10+ hrs"
+)
 
 
 🎯 Dashboard 1: HR Attendance & Alerts Tracker (April 1–15)
