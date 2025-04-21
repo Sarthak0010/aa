@@ -8,11 +8,28 @@ VAR ExcludedSchedules =
         "Half Day 9:30 AM to 2:00 PM",
         "WO"
     }
-VAR IsExcluded =
+
+VAR ExcludedAbsences = 
+    {
+        "SL", "CL", "OD", "PL", "RH", "TL", "TS", "CO", 
+        "RL", "EL", "JL", "LWP", "ML", "PAT"
+    }
+
+VAR IsScheduleExcluded = 
     [Assigned Shift Code] = "WO" || [Confirmed Schedule] IN ExcludedSchedules
+
+VAR IsRegularizationPending =
+    [Regularization Status] = "Employee To Regularize"
+
+VAR IsAllowedAbsence = 
+    [Absence] IN ExcludedAbsences
+
+VAR ShouldExclude =
+    IsScheduleExcluded || IsRegularizationPending || IsAllowedAbsence
+
 RETURN
 IF(
-    IsExcluded,
+    ShouldExclude,
     "No",
     IF(
         [Confirmed Total Hours] < 8,
@@ -20,6 +37,7 @@ IF(
         "No"
     )
 )
+
 
 
 🎯 Dashboard 1: HR Attendance & Alerts Tracker (April 1–15)
