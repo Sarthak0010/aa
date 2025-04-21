@@ -1,30 +1,24 @@
 #aa
-LateIn =
-VAR Schedule = [Confirmed Schedule]
+UnderWorked = 
 VAR ExcludedSchedules = 
     {
-        "WO", 
-        "Normal Working Hours", 
-        "Half Day 9:30 AM to 2:00 PM"
+        "9:00 AM to 1:00 PM",
+        "9:30 AM to 2:00PM",
+        "9:30 AM to 2:00 PM New",
+        "Half Day 9:30 AM to 2:00 PM",
+        "WO"
     }
-VAR IsExcluded = Schedule IN ExcludedSchedules
-VAR StartTimeString =
-    IF(
-        NOT IsExcluded && CONTAINSSTRING(Schedule, "to"),
-        LEFT(Schedule, FIND("to", Schedule) - 1),
-        BLANK()
-    )
-VAR StartTime =
-    IF(
-        NOT ISBLANK(StartTimeString),
-        TIMEVALUE(TRIM(StartTimeString)),
-        BLANK()
-    )
+VAR IsExcluded =
+    [Assigned Shift Code] = "WO" || [Confirmed Schedule] IN ExcludedSchedules
 RETURN
 IF(
-    IsExcluded || ISBLANK(StartTime) || ISBLANK([Confirmed In Punch]),
+    IsExcluded,
     "No",
-    IF([Confirmed In Punch] > StartTime, "Yes", "No")
+    IF(
+        [Confirmed Total Hours] < 8,
+        "Yes",
+        "No"
+    )
 )
 
 
