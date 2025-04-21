@@ -1,611 +1,318 @@
 #aa
-That’s a smart move—and I love your approach! If we start from scratch, step-by-step, we’ll make sure every element in your Power BI dashboard is bulletproof, insightful, and competitive.
 
-✅ PHASE 1: DATA IMPORT & PREP
-🔹 Step 1: Open Power BI Desktop
-If not already installed, download Power BI Desktop.
+🎯 Dashboard 1: HR Attendance & Alerts Tracker (April 1–15)
+Purpose: Identify attendance patterns, missing punches, late ins, low working hours, and pending regularizations.
 
-🔹 Step 2: Import Your HR Dataset
-Open Power BI
+🧱 STEP-BY-STEP GUIDE
+🔹 STEP 1: Open Power BI and Import Your Data
+Launch Power BI Desktop
 
-Click on Home > Get Data > Excel (or CSV) depending on your file
+Go to Home > Get Data > Excel
 
-Browse and select your dataset
+Browse to your punch-in/punch-out Excel file → Click Open
 
-Click Load
+Select your worksheet or table → Click Load
 
-✅ You’ll now see the data in the Fields pane on the right.
+🔹 STEP 2: Clean and Format in Power Query
+After loading, click on Transform Data
 
-🔹 Step 3: Go to Power Query Editor
-We’ll clean and prepare the data here.
+For each important column, check and apply data types:
 
-Click Home > Transform Data
+Date → Data Type: Date
 
-This opens Power Query Editor
+Confirmed In Punch & Out Punch → Time
 
-✅ PHASE 2: DATA CLEANING & TRANSFORMING
-🔸 Step 4: Remove Unnecessary Columns
-In Power Query Editor:
+Confirmed Hours / Total Hours → Decimal
 
-Select columns you want to remove (like Blood Group, Merger & Acquisition, etc.)
+Week Days, Grade Code, Department → Text
 
-Right-click > Remove Columns
+Remove extra or blank columns (like “Sr. No” if not needed)
 
-🔸 Step 5: Handle Missing Data
-For columns with missing or blank values:
+Click Close & Apply to return to Power BI
 
-If a column has >90% missing, remove it.
+🔹 STEP 3: Create Calculated Columns (DAX)
+Go to Modeling > New Column for each of the following:
 
-For others, use:
-
-Replace Values (e.g., replace null Gender with "Unknown")
-
-Remove Rows (optional: only if it's safe)
-
-🔸 Step 6: Correct Data Types
-Ensure these fields have correct types:
-
-
-Column	Type
-Date of Birth, Joining Date	Date
-Age, Total Years of Exp	Whole Number
-Gender, Department	Text
-GRADE1	Text
-Adani/Previous Experience	Decimal or Whole Number
-✔️ To change: Click column header → Transform → Data Type
-
-🔸 Step 7: Rename Columns (Optional but cleaner)
-Example:
-
-Name of Employee → Employee Name
-
-GRADE1 → Grade
-
-WorkLevel → Level
-
-✅ After cleaning: Click Close & Apply
-
-✅ PHASE 3: CREATE CALCULATED COLUMNS
-Go to Data View (table icon on the left sidebar)
-
-🔸 Step 8: Create Age Group Column
-Click Modeling > New Column, then paste:
+1️⃣ Late In Flag
+Checks if In Punch was later than schedule (customize the time based on your shift pattern)
 
 DAX
 Copy
 Edit
-Age Group = 
-SWITCH(TRUE(),
-    'TableName'[Age] <= 25, "≤25",
-    'TableName'[Age] <= 35, "26–35",
-    'TableName'[Age] <= 45, "36–45",
-    'TableName'[Age] <= 55, "46–55",
-    "56+"
-)
-(Replace TableName with your actual table name)
-
-🔸 Step 9: Create Tenure (Years with Company)
-DAX
-Copy
-Edit
-Tenure (Years) = 
-DATEDIFF('TableName'[Joining Date], TODAY(), YEAR)
-🔸 Step 10: Create Tenure Bands
-DAX
-Copy
-Edit
-Tenure Band = 
-SWITCH(TRUE(),
-    'TableName'[Tenure (Years)] < 1, "<1 Year",
-    'TableName'[Tenure (Years)] <= 3, "1–3 Years",
-    'TableName'[Tenure (Years)] <= 5, "3–5 Years",
-    "5+ Years"
-)
-✅ PHASE 4: CREATE MEASURES (for % insights)
-Go to Modeling > New Measure
-
-🔸 Step 11: Total Employee Count
-DAX
-Copy
-Edit
-Total Employees = COUNT('TableName'[Employee Code])
-🔸 Step 12: Gender % (Example: Female %)
-DAX
-Copy
-Edit
-Female Count = 
-CALCULATE(COUNT('TableName'[Employee Code]), 'TableName'[Gender] = "Female")
-
-Female % = 
-DIVIDE([Female Count], [Total Employees]) * 100
-Create similar ones for Male %, Other %, etc.
-
-🔸 Step 13: Grade-wise Employee Count
-DAX
-Copy
-Edit
-Employee by Grade = 
-COUNTROWS('TableName')
-(Use in visuals filtered by Grade)
-
-🔸 Step 14: Average Experience
-DAX
-Copy
-Edit
-Avg Exp = AVERAGE('TableName'[Total Years of Exp])
-
-🔹 2. Is Experienced (Yes/No)
-For employees with 10+ years of total experience (Adani + Previous):
-
-DAX
-Copy
-Edit
-Is Experienced = 
+LateIn = 
 IF(
-    'TableName'[Adani Experience] + 'TableName'[Previous Experience] >= 10,
-    "Yes",
+    NOT ISBLANK([Confirmed In Punch]) &&
+    [Confirmed In Punch] > TIME(9, 15, 0), 
+    "Yes", 
     "No"
 )
-🔹 3. Manager Type (Based on Work Level)
-You can categorize the type of manager using WorkLevel (or Grade):
+2️⃣ Underworked (< 8 Hours)
+Flag for employees who worked less than 8 hours
 
 DAX
 Copy
 Edit
-Manager Category = 
-SWITCH(TRUE(),
-    'TableName'[Level] = "Managing Managers", "Senior Manager",
-    'TableName'[Level] = "Managing Others", "Mid-Level Manager",
-    'TableName'[Level] = "Managing Self", "Individual Contributor",
-    'TableName'[Level] = "SS", "Support Staff",
-    "Executive"
+UnderWorked = 
+IF(
+    [Confirmed Total Hours] < 8,
+    "Yes", 
+    "No"
 )
-✅ POWERFUL DAX MEASURES FOR INSIGHTS & CARDS
-(Go to Modeling > New Measure)
-
-🔸 1. % of Women in Workforce
-DAX
-Copy
-Edit
-% Female = 
-DIVIDE(
-    CALCULATE(COUNT('TableName'[Employee Code]), 'TableName'[Gender] = "Female"),
-    [Total Employees]
-) * 100
-🔸 2. Average Age
-DAX
-Copy
-Edit
-Average Age = AVERAGE('TableName'[Age])
-🔸 3. Average Tenure (Years)
-DAX
-Copy
-Edit
-Average Tenure = AVERAGE('TableName'[Tenure (Years)])
-🔸 4. % of Workforce Nearing Retirement
-DAX
-Copy
-Edit
-% Nearing Retirement = 
-DIVIDE(
-    CALCULATE(COUNT('TableName'[Employee Code]), 'TableName'[Retirement Risk] = "Yes"),
-    [Total Employees]
-) * 100
-🔸 5. % Experienced Employees (10+ Years)
-DAX
-Copy
-Edit
-% Experienced = 
-DIVIDE(
-    CALCULATE(COUNT('TableName'[Employee Code]), 'TableName'[Is Experienced] = "Yes"),
-    [Total Employees]
-) * 100
-🔸 6. Department with Highest Headcount
-(For use in cards or tables)
+3️⃣ Missing Punch
+Checks if either punch-in or punch-out is missing
 
 DAX
 Copy
 Edit
-Top Department = 
-TOPN(
-    1,
-    SUMMARIZE('TableName', 'TableName'[Department], "DeptCount", COUNT('TableName'[Employee Code])),
-    [DeptCount], DESC
+MissingPunch = 
+IF(
+    ISBLANK([Confirmed In Punch]) || ISBLANK([Confirmed Out Punch]),
+    "Yes", 
+    "No"
 )
-Then use Top Department in a Table visual or display card.
-
-🔸 7. Employees Count by Category
-You can use these dynamically in visuals or just create measures like:
-
+4️⃣ Regularization Needed
 DAX
 Copy
 Edit
-Count - Managing Self = 
-CALCULATE(
-    COUNT('TableName'[Employee Code]),
-    'TableName'[Level] = "Managing Self"
+NeedsRegularization = 
+IF(
+    [Regularization Status] = "Employee to regularize",
+    "Yes", 
+    "No"
 )
+🔹 STEP 4: Create KPIs (Cards)
+Go to Insert > Card Visual, and add these:
 
 
+KPI Card Title	DAX Expression (create as Measures)
+Total Employees	TotalEmp = DISTINCTCOUNT('Table'[Employee Number])
+Average Working Hours	AvgHours = AVERAGE('Table'[Confirmed Total Hours])
+Total Late In Entries	LateInCount = CALCULATE(COUNTROWS('Table'), 'Table'[LateIn] = "Yes")
+Missing Punch Records	MissingPunchCount = CALCULATE(COUNTROWS('Table'), 'Table'[MissingPunch] = "Yes")
+Regularization Required	RegNeeded = CALCULATE(COUNTROWS('Table'), 'Table'[NeedsRegularization] = "Yes")
+🎨 Format:
 
-Absolutely! Let’s go super detailed and beginner-friendly, step-by-step, for Dashboard 1: Demographic Analysis in Power BI.
+Use icons or color backgrounds (Red for alerts, Blue for general metrics)
 
-🧭 OVERVIEW OF STEPS
-We will cover:
+🔹 STEP 5: Create the Alerts Table
+Insert a Table visual
 
-Importing data
-
-Creating necessary calculated columns and measures
-
-Designing each visual one-by-one
-
-Arranging visuals in a clean layout
-
-Adding slicers for interactivity
-
-Final polish and tips
-
-✅ STEP 1: OPEN & IMPORT DATA
-Open Power BI Desktop
-
-Click Home > Get Data > Excel (or CSV)
-
-Browse to your file and click Load
-
-Wait for data to show on the Fields pane (right side)
+Add these columns:
 
-✅ STEP 2: PREPARE DATA
-Click Home > Transform Data (opens Power Query)
+Employee Number
 
-Remove columns not needed (like Marital Status, Blood Group)
+Employee Name
 
-Replace missing values with defaults (like “Unknown”)
+Date
 
-Ensure correct data types:
+Confirmed In Punch
 
-Date of Birth → Date
+Confirmed Out Punch
 
-Gender, Department → Text
+Confirmed Total Hours
 
-Age, Experience → Whole Number
+Time Type
 
-Rename confusing columns (optional)
+Absence
 
-Click Close & Apply
+LateIn
 
-✅ STEP 3: CREATE CALCULATED COLUMNS
-Click on Data View (table icon) → Modeling > New Column
+UnderWorked
 
-🔹 Age Group:
-DAX
-Copy
-Edit
-Age Group = 
-SWITCH(TRUE(),
-    'Table'[Age] <= 25, "≤25",
-    'Table'[Age] <= 35, "26–35",
-    'Table'[Age] <= 45, "36–45",
-    'Table'[Age] <= 55, "46–55",
-    "56+"
-)
-🔹 Tenure in Years:
-DAX
-Copy
-Edit
-Tenure (Years) = 
-DATEDIFF('Table'[Joining Date], TODAY(), YEAR)
-🔹 Tenure Band:
-DAX
-Copy
-Edit
-Tenure Band = 
-SWITCH(TRUE(),
-    'Table'[Tenure (Years)] < 1, "<1 Year",
-    'Table'[Tenure (Years)] <= 3, "1–3 Years",
-    'Table'[Tenure (Years)] <= 5, "3–5 Years",
-    "5+ Years"
-)
-✅ STEP 4: CREATE MEASURES (KPIs)
-Click Modeling > New Measure
+MissingPunch
 
-🔹 Total Employees:
-DAX
-Copy
-Edit
-Total Employees = COUNT('Table'[Employee Code])
-🔹 % Female:
-DAX
-Copy
-Edit
-Female Count = 
-CALCULATE(COUNT('Table'[Employee Code]), 'Table'[Gender] = "Female")
+NeedsRegularization
 
-% Female = 
-DIVIDE([Female Count], [Total Employees]) * 100
-🔹 Average Age:
-DAX
-Copy
-Edit
-Average Age = AVERAGE('Table'[Age])
-🔹 Average Tenure:
-DAX
-Copy
-Edit
-Average Tenure = AVERAGE('Table'[Tenure (Years)])
-🔹 % Nearing Retirement:
-DAX
-Copy
-Edit
-% Nearing Retirement = 
-DIVIDE(
-    CALCULATE(COUNT('Table'[Employee Code]), 'Table'[Age] >= 58),
-    [Total Employees]
-) * 100
-✅ STEP 5: BUILD VISUALS
-🟪 1. KPI CARDS
-Click Insert > Card
+Apply Conditional Formatting:
 
-Create these cards one by one:
+Red text if LateIn = Yes
 
-Total Employees → use [Total Employees]
+Orange background if UnderWorked = Yes
 
-% Female → use [% Female]
+Red ❌ icon if MissingPunch = Yes
 
-Avg Age → [Average Age]
+Yellow icon if NeedsRegularization = Yes
 
-Avg Tenure → [Average Tenure]
+🔹 STEP 6: Create Attendance Trend Chart
+Visual: Line Chart
 
-% Nearing Retirement → [% Nearing Retirement]
+X-Axis: Date
 
-🔧 Format each card:
+Y-Axis: Average of Confirmed Total Hours
 
-Title ON: "Total Employees" etc.
+Legend: Time Type
 
-Data Label: BIG font
+Title: “Average Working Hours Over Time”
 
-Use consistent color (e.g. blue/black)
+🔹 STEP 7: Create Absence Breakdown
+Visual: Bar Chart
 
-🟩 2. Gender Distribution (Donut Chart)
-Click on Donut Chart
+X-Axis: Absence Type
 
-Drag Gender to Legend
+Y-Axis: Count
 
-Drag Employee Code to Values (Count)
+Filter out blank/nulls
 
-Turn ON:
+Title: “Absence Distribution (April 1–15)”
 
-Data Labels → Show Percent and Category
+🔹 STEP 8: Create Department or Grade Wise Chart
+Visual: Column Chart
 
-Title: "Gender Distribution"
+X-Axis: Department or Grade Code
 
-🟧 3. Age Group Distribution (Column Chart)
-Click Stacked Column Chart
+Y-Axis: Average Confirmed Total Hours
 
-Axis: Age Group
+Title: “Department-wise Avg. Working Hours”
 
-Values: Count of Employee Code
+🔹 STEP 9: Add Slicers (Interactive Filters)
+Use vertical slicers for:
 
-Format:
-
-Data labels ON
-
-Title: “Age-wise Employee Distribution”
-
-🟨 4. Department-wise Gender Split (Stacked Bar)
-Click Stacked Bar Chart
-
-Axis: Department
-
-Legend: Gender
-
-Values: Employee Code (Count)
-
-Title: “Department-wise Gender Split”
-
-🟦 5. Location-wise Employee Count (Tree Map)
-Click Tree Map
-
-Group: Location or Domicile State
-
-Values: Employee Code (Count)
-
-Title: “Employee Distribution by Location”
-
-🟫 6. Employee Type or WorkLevel (Bar or Donut)
-You can do either:
-
-Donut for WorkLevel
-
-Bar Chart for Employee Type
-
-Same pattern:
-
-Legend: WorkLevel
-
-Value: Count of Employee Code
-
-Show % and value in data labels
-
-✅ STEP 6: ADD SLICERS
-Click Slicer
-
-Add fields like:
-
-Gender
+Date
 
 Department
 
-Location
+Grade Code
 
-WorkLevel
+Week Day
 
-Grade
+Absence
 
-📌 Use these on the left/right side as filters.
+Time Type
 
-✅ STEP 7: FINAL LAYOUT & POLISH
-Align visuals neatly (use View > Snap to Grid)
+📌 Tip: Keep slicers on the left or right edge of the dashboard
 
-Add titles above each visual
+🔹 STEP 10: Add Title and Design Elements
+Use Text Box at top:
 
-Optional: Use color themes (View > Themes)
+"HR Attendance & Compliance Dashboard | April 1 – 15, 2025"
 
-Add a Text Box on top as dashboard title:
-📝 “Dashboard 1: Demographic Analysis”
+Choose a color theme:
 
-DASBOARD 2
-Updated saved memory
-Great! Here's an even more detailed, step-by-step guide to create Dashboard 2: Grade-Level & WorkLevel Analysis in Power BI. This version assumes you're working from scratch and want a clean, professional HR dashboard with full mapping of both GRADE1 and WORKLEVEL values.
+Background: Light gray or white
 
-🎯 Goal
-Create a comprehensive Power BI dashboard analyzing employees based on:
+Accent: Red for issues, green for OK, blue for neutral
 
-Grade (mapped from codes like CE, DR, etc. to full titles)
+🔹 STEP 11: Publish and Share
+Save your file
 
-Designation/Work Level
+Go to Home > Publish > Power BI Service
 
-Hierarchical grouping
+Choose your workspace
 
-% Distribution visuals
+Copy the dashboard link and share it with your manager/team
 
-Clear, presentation-ready layout
+✅ Done! You’ve just built a fully interactive, alert-based HR Attendance Dashboard!
 
-🧩 STEP 1: Load & Inspect Data
-Open Power BI Desktop.
+Would you like a:
 
-Click on “Get Data” > Excel/CSV → Load your employee dataset.
+🎨 Mockup visual (Power BI layout sketch)?
 
-Inspect columns:
+📥 Downloadable PBIX starter file (if you give dummy data)?
 
-GRADE1 → coded values like CE, DR, etc.
+📌 Help with Dashboard 2?
 
-WORKLEVEL → descriptive designations like Chief Executive, Director, etc.
+Just say the word!
 
-🏷 STEP 2: Map GRADE1 Codes to Full Titles
-Create a calculated column in Power BI to map GRADE1 codes to full titles:
 
-Go to: Modeling → New Column
+
+
+
+
+You said:
+🎨 Mockup visual (Power BI layout sketch)?
+
+
+ChatGPT said:
+Image created
+
+
+
+
+Rate this image
+
+
+
+
+
+You said:
+is dashboard 1 going to be sufficient according to be for Late In Punch (vs Confirmed Schedule)
+
+Daily Total Hours < 8
+
+Missing Confirmed In/Out Punch
+
+Regularization required
+
+IT IS MOST IMPORTANT
+
+as i am also planning to create time group of every two hours 
+
+
+ChatGPT said:
+Great question — and you're thinking exactly like an analyst should. Let's evaluate whether Dashboard 1 fully covers your most important priorities, and how adding time grouping will level it up.
+
+✅ Your 4 Core Goals:
+
+Goal	Covered in Dashboard 1?	Notes
+Late In Punch (vs Confirmed Schedule)	✔️ Yes	The LateIn flag handles this; you can enhance it further by comparing with actual schedule time dynamically
+Daily Total Hours < 8	✔️ Yes	The UnderWorked flag + KPI card catches this clearly
+Missing Confirmed In/Out Punch	✔️ Yes	MissingPunch flag does exactly this
+Regularization Required	✔️ Yes	NeedsRegularization column tracks this perfectly
+💡 Conclusion:
+Yes, Dashboard 1 fully supports these 4 key metrics — with alerts, filters, and visual flags.
+
+💡 Optional Enhancement: Time Grouping (Every 2 Hours)
+You're planning to create time groups like:
+
+0–2 hours
+
+2–4 hours
+
+4–6 hours
+
+6–8 hours
+
+8–10 hours
+
+10+ hours
+
+This is a great idea for:
+
+Visualizing how many employees worked in each time band
+
+Spotting underworked or overworked trends quickly
+
+Adding depth to your analysis beyond just "below 8 hours"
+
+🎯 To Do This:
+Create a new calculated column:
 
 DAX
 Copy
 Edit
-Grade_Title = 
-SWITCH(
-    TRUE(),
-    'YourTableName'[GRADE1] = "CE", "Chief Executive",
-    'YourTableName'[GRADE1] = "DR", "Director",
-    'YourTableName'[GRADE1] = "Partner",
-    'YourTableName'[GRADE1] = "PR", "Partner",
-    'YourTableName'[GRADE1] = "JP", "Junior Partner",
-    'YourTableName'[GRADE1] = "SP", "Senior Partner",
-    'YourTableName'[GRADE1] = "VP", "Vice President",
-    'YourTableName'[GRADE1] = "AP", "Assistant Vice President",
-    'YourTableName'[GRADE1] = "GM", "General Manager",
-    'YourTableName'[GRADE1] = "E4", "Executive Level 4",
-    'YourTableName'[GRADE1] = "E3", "Executive Level 3",
-    "Unknown"
+HourGroup = 
+SWITCH(TRUE(),
+    'Table'[Confirmed Total Hours] <= 2, "0-2 hrs",
+    'Table'[Confirmed Total Hours] <= 4, "2-4 hrs",
+    'Table'[Confirmed Total Hours] <= 6, "4-6 hrs",
+    'Table'[Confirmed Total Hours] <= 8, "6-8 hrs",
+    'Table'[Confirmed Total Hours] <= 10, "8-10 hrs",
+    "10+ hrs"
 )
-🧠 STEP 3: Create Hierarchical Grouping (Optional)
-To group employees into categories like Leadership, Mid-Level, etc.:
+Use it in a bar chart:
 
-DAX
-Copy
-Edit
-Grade_Group = 
-SWITCH(
-    TRUE(),
-    'YourTableName'[GRADE1] IN {"CE", "DR"}, "Executive Leadership",
-    'YourTableName'[GRADE1] IN {"PR", "JP", "SP"}, "Partners",
-    'YourTableName'[GRADE1] IN {"VP", "AP"}, "Senior Management",
-    'YourTableName'[GRADE1] IN {"GM"}, "Middle Management",
-    'YourTableName'[GRADE1] IN {"E4", "E3"}, "Junior/Exec Level",
-    "Other"
-)
-🧱 STEP 4: Create DAX Measures for Counts & Percentages
-Total Employees:
+X-Axis: HourGroup
 
-DAX
-Copy
-Edit
-TotalEmployees = COUNTROWS('YourTableName')
-Employees by Grade Group:
+Y-Axis: Count of Employee or Records
 
-DAX
-Copy
-Edit
-Employees by Grade Group = 
-CALCULATE([TotalEmployees], ALLEXCEPT('YourTableName', 'YourTableName'[Grade_Group]))
-% by Grade Group:
+📌 Optional: Use It As a Slicer
+Let users filter records to only see those who fall into a certain work time band — super useful for drilldowns.
 
-DAX
-Copy
-Edit
-% by Grade Group = 
-DIVIDE([Employees by Grade Group], [TotalEmployees], 0)
-% by Work Level:
+✅ Final Verdict:
+Dashboard 1 is already sufficient for your 4 alert goals
 
-DAX
-Copy
-Edit
-Employees by WorkLevel = COUNT('YourTableName'[WORKLEVEL])
+Adding 2-hour grouping makes it even more insightful and competitive
 
-% by WorkLevel = 
-DIVIDE([Employees by WorkLevel], [TotalEmployees], 0)
-📊 STEP 5: Create Visuals
-Go to the Report view and create the following visuals:
+It helps managers quickly understand how the workforce is spread across working hours
 
-A. Bar Chart – Count of Employees by Grade_Title
-Axis: Grade_Title
-
-Values: TotalEmployees
-
-B. Pie or Donut Chart – % of Employees by Grade Group
-Legend: Grade_Group
-
-Values: % by Grade Group
-
-Show % Labels
-
-C. Column Chart – Employees by WorkLevel
-Axis: WORKLEVEL
-
-Values: Employees by WorkLevel
-
-Sort descending by value
-
-D. Pie Chart – % by WorkLevel
-Legend: WORKLEVEL
-
-Values: % by WorkLevel
-
-🎨 STEP 6: Design Tips
-Use corporate fonts/colors (like Segoe UI, blue/gray tones)
-
-Add a title card: “Grade-Level & WorkLevel HR Analysis”
-
-Add slicers for filtering:
-
-Gender
-
-Department
-
-Location
-
-Use Data Labels and Tooltips for interactivity
-
-Arrange visuals in 2-column or grid layout for clean design
-
-🧹 STEP 7: Final Touches
-Use Format Panel to:
-
-Set label size (9–12pt)
-
-Enable legends and data labels
-
-Align text centrally
-
-Add a text box footer:
-
-“Dashboard powered by Power BI | HR Analytics – [Your Name]”
-
-hould we move to Dashboard 3: Experience and Employment Type Analysis next
+Want help designing that time group chart or need a new mockup layout with this enhancement?
