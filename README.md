@@ -1,13 +1,13 @@
 #aa
 
 if(
-  empty(items('Apply_to_each')?['Date End']),
+  empty(items('Apply_to_each_2')?['Date Start']),
   '',
   concat(
     formatDateTime(
-      parseDateTime(items('Apply_to_each')?['Date End'], 'dd-MM-yyyy'),
+      parseDateTime(items('Apply_to_each_2')?['Date Start'], 'dd-MM-yyyy'),
       'yyyy-MM-dd'
     ),
-    'T18:00:00'
+    'T09:00:00'
   )
 )
