@@ -1,4 +1,4 @@
 #aa
 
-formatDateTime(outputs('Get_item')?['body/DateStart'], 'yyyy-MM-ddTHH:mm:ss')
-formatDateTime(outputs('Get_item')?['body/DateEnd'], 'yyyy-MM-ddTHH:mm:ss')
+formatDateTime(triggerOutputs()?['body/DateStart'], 'yyyy-MM-ddT00:00:00')
+formatDateTime(triggerOutputs()?['body/DateEnd'], 'yyyy-MM-ddT00:00:00')
