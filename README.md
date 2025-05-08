@@ -1,3 +1,13 @@
 #aa
 
-if(empty(items('Apply_to_each')?['Date Start']), '', concat(formatDateTime(parseDateTime(items('Apply_to_each')?['Date Start'], 'dd-MM-yyyy'), 'yyyy-MM-dd'), 'T09:00:00'))
+if(
+  empty(items('Apply_to_each')?['Date End']),
+  '',
+  concat(
+    formatDateTime(
+      parseDateTime(items('Apply_to_each')?['Date End'], 'dd-MM-yyyy'),
+      'yyyy-MM-dd'
+    ),
+    'T18:00:00'
+  )
+)
