@@ -1,13 +1,4 @@
 #aa
 
-if(
-  empty(items('Apply_to_each_2')?['Date Start']),
-  '',
-  concat(
-    formatDateTime(
-      parseDateTime(items('Apply_to_each_2')?['Date Start'], 'dd-MM-yyyy'),
-      'yyyy-MM-dd'
-    ),
-    'T09:00:00'
-  )
-)
+formatDateTime(outputs('Get_item')?['body/DateStart'], 'yyyy-MM-ddTHH:mm:ss')
+formatDateTime(outputs('Get_item')?['body/DateEnd'], 'yyyy-MM-ddTHH:mm:ss')
